@@ -1,0 +1,365 @@
+---
+title: "Intro to R Crash Course"
+author: "Fred LaPolla"
+date: "11/11/2025"
+output:
+  slidy_presentation: default
+  ioslides_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Intro to R for AllofUs: Basics of R to Get Started in Analysis
+
+
+
+***
+
+## R Notebooks
+
+This file will walk you through every step of today's class.  Throughout the R notebook, you will see the example code displayed like this. Code can be run by hitting the Play button triangle. If your code has an error and you want to reset your code up to this point, the down arrow with a green line runs all code up to this point:
+
+```{r}
+print(2  +  2)
+four <- 2+2
+```
+
+```{r}
+four <- 5
+```
+
+
+***
+
+## Objectives
+
+Learning R is a journey, and you should not expect to walk out of one workshop with mastery. By the end of today's class you should be able to:
+
+1) Recognize R's syntax and understand how to format an argument
+2) Understand common sources of problems in R and how to troubleshoot them
+3) Know where to look for more information
+
+
+***
+
+# Getting Started
+
+Working in the All of Us Research Workbench data enclave entails certain trade offs. It is required by the All of Us program to analyze their data and is a secure environment, but it is a bit more challenging than working in the RStudio Integrated Design Environment (IDE). 
+
+ 
+
+***
+
+## Scripting
+
+A script file is a common way to saves comments and stores code. Having a an R script will let you leave comments to yourself or others, provide a file for others to see what you have done, make your research more reproducible or rerun analyses.
+
+In the All of Us Research Workbench Data Enclave, you will only want to save the code that works and does what you want to avoid your file becoming too cluttered. 
+
+There are two types of things you can enter in this window:
+1)	Comments: any line that starts with a # is interpreted by R as a comment and is not processed
+2)	Commands: any line that does NOT start with a # is interpreted as a command and R will attempt to process it
+
+Type the following into the script window:
+
+	# Create a vector x, or "list" of numbers (more on vectors later)
+x <- c(1,2,5,6)
+
+***
+
+## Key Commands
+
+By default, R in a Jupyter notebook will not display a global environment. R is what is called an Object Oriented Programming (OOP) Language. That means you pull in static objects like tables and manipulate them.
+
+To see what objects you have read in you can run a command:
+
+```{r}
+ls()
+```
+
+
+
+***
+
+## Working Directory
+
+The working directory is the file folder that you are currently accessing with R. If you want to check what your current working directory is, use the command getwd:
+
+```{r}
+getwd()
+```
+
+
+If you want to find out what files are in your current working directory is, use the command dir:
+
+```{r}
+dir()
+```
+
+***
+
+## Reading in CSVs
+
+Normally in R, we need to read in data by running a command like read.csv() to pull in a file. In the All of Us Researcher Workbench this is not necessary, but it is a very common step in R and important to know:
+
+
+You can pull a CSV from a web source, as below, or if it is on your computer you can just run:
+
+df <- read.csv("yourFile.csv"")
+
+```{r}
+
+pat <- read.csv("https://raw.githubusercontent.com/fredlapolla/R_AllofUs/refs/heads/main/patients.csv")
+med <- read.csv("https://raw.githubusercontent.com/fredlapolla/R_AllofUs/refs/heads/main/medications.csv")
+obs <- read.csv("https://raw.githubusercontent.com/fredlapolla/R_AllofUs/refs/heads/main/observations.csv")
+
+
+```
+
+
+***
+
+## Troubleshooting and Understanding Errors
+
+When you first get started with R, expect to see lots of error messages! Here are some helpful hints for troubleshooting some common errors.
+
+Common error sources:
+
+- Typos :R is Case Sensitive. It is not space sensitive
+- Unclosed parentheses or quotation marks
+- Commas
+- Arguments that a command does not know how to handle
+
+If you see a + plus sign after your command, it means somewhere a parenthesis or quotation mark did not close.
+
+Hit *escape* to clear the command and try again after looking for typos.
+
+***
+
+## Using AI for troubleshooting
+
+- Specify the language (e.g. R, Python)
+- Copy and paste the error
+- State any dependencies (e.g. packages like dplyr)
+- State the operating system (e.g. Windows vs. Mac vs. Linux)
+- State the goal
+
+AI can be nice in this case because if there is a typo or formatting issue, you can request the system provide the correct formatting. 
+
+For example, Windows will copy a file path as "C:\Users\lapolf01\Downloads\medications (1).csv" but you need either "C:\\Users\\lapolf01\\Downloads\\medications (1).csv" or "C:/Users/lapolf01/Downloads/medications (1).csv". If you give the former to UltraViolet, you can ask the system to reformat appropriately
+
+***
+
+## Using the web for troubleshooting
+
+Sometimes it is faster to just search online rather than format an ideal prompt:
+
+-StackOverflow: https://stackoverflow.com/questions
+- DataCamp: https://www.datacamp.com/doc/r/category/statistics 
+- CheatSheets
+
+
+***
+
+##	Getting to Know Your Data
+
+Back to the data frame you read into your Global Environment. How can you get a sense of what data we have in the Pat data frame looks like?
+
+There are a several ways to explore the contents of the dataset. You could type in the name of the data frame, but unless your data frame is very small, that is probably not a good idea! If you do want to see the full data frame, you can click on the name of the data frame in the Environment pane this actually runs the following function:
+
+(Here is a useful command that I must run in the console due to the R slidy slides not liking it)
+
+**View(pat)**
+
+
+
+That is a lot of information to try to parse, but R has functions that allow you to find out useful information about the data frame. A good way to start is by calling the str() function with the name of the data frame as the argument. This function shows the structure of the data. 
+
+All of Us also often provides dim. This can be nice if you feel confident in the structure and just want to make sure you did not read in empty data.
+
+With EHR data, head() can be nice, as it prints the first 6 rows, since often knowing the data type of certain metadata columns may be of less interest. 
+
+
+```{r}
+dim(pat)
+str(pat)
+head(pat)
+```
+
+***
+## Summary
+
+Notice that this data frame has 1527 observations and 23 variables. Remember that observations correspond to the rows of the data frame and variables correspond to its columns.
+
+You can get some basic summary statistics about your data using the command summary().
+
+```{r}
+summary(pat)
+```
+
+
+This displays different types of stats about each variable, depending on its type. For continuous variables, summary returns the mean, median, quartiles, minimum, maximum and count of NAs. For categorical variables, summary returns a count of how many items are in each category. Let us explore why this is by looking at the class of these variables. A variable is referred to using the date frame name, then $, and then the variable name.
+
+***
+
+## R holds several types of data:
+
+>- Numbers (e.g. 4.5, 100, etc.)
+
+>- Integer (writted 1L, meaning 1)
+
+>- Characters (string, e.g. "Fred")
+
+>- Factor (categorical, e.g. "Population Health", "DGIM", and ordinal e.g. "PGY1", "PGY2", "PGY3" )
+
+>- Logical (e.g. True False)
+
+>- Complex (e.g. 1+i, probably this does not matter)
+
+
+***
+
+## Let's take a look
+
+```{r}
+class(pat$STATE)
+```
+
+Does this seem right?
+
+***
+
+Let's fix it:
+
+```{r}
+pat$STATE<- factor(pat$STATE)
+summary(pat$STATE)
+```
+
+
+
+
+***
+
+## Exercise: 
+
+Reclassify City as categorical data. 
+
+```{r}
+
+```
+
+
+***
+
+## R holds several structures of data
+
+>- Dataframes - Analogous to a spreadsheet, columns and rows of different types of data
+
+>- Matrices - Columns and rows of all one type of data (e.g. all numeric)
+
+>- Lists - A collection of objects that do not need to be the same type
+
+>- Vectors - A collection of objects of the same type (like a list)
+
+
+
+Depending on what types of analysis you are doing, the difference could be important
+
+***
+
+## Exercise: 
+
+What type of structure is obs?
+
+```{r}
+
+```
+
+
+
+***
+
+## Names
+
+The function names() returns a list of the variables or column names in our dataset. This is useful if you need to check the spelling or capitalization of variables, or to find out the column number that corresponds to a variable (you can refer to a column by its number or name).
+
+
+```{r}
+names(obs)
+```
+
+***
+
+#   Processing and Working with Data
+
+In this section, you will learn to use R to do some basic processing and cleaning of data (data wrangling) in order to make it easier to work with. 
+
+***
+
+## Indexing
+
+Often, you will not want to analyze an entire dataset, but rather a subset of it, a given set of variables and observations. Remember the syntax in R -- when you access the elements of a data frame, the first number in the square brackets is the row number (observations) and the second is the column number (variables). So pat[2,4] is the second observation of the 4th variable (order). There are several ways to pull out multiple rows/columns:
+
+Putting a colon between two numbers will return a range of rows or columns, referred to as a slice, e.g. 1:5 will return elements 1,2,3,4,5
+
+***
+
+
+## Indexing
+
+Note that while the syntax for accessing rows and columns looks the same, the meaning is very different since pulling out a set of observations, for example taking the first five observations of all the obs data data
+
+```{r}
+obs[1:5, ]
+
+```
+
+
+...is a very different concept than pulling out the first two variables (number and name) for all the observations.
+
+```{r}
+obs[, 1:5]
+
+```
+
+***
+
+## Concatenating
+
+Using the function c(), which concatenates numbers, to include non-consecutive values, e.g. c(1,3,5) will return elements 1,3,5
+
+Leaving it blank either before or after the comma will return all observations or variables, respectively.
+
+***
+
+## Concatenating
+
+Using the concatenation function c(), allows you to select observations or variables that are not consecutive, for example this will select the 1st, 5th, and 80th observations of the name and order :
+
+```{r}
+nyc[c(1,5,80), c(1,5)]
+```
+
+***
+
+## Deleting
+
+It is also possible to use this syntax to remove data. For example, this creates a new dataset with everything except the 1st column.
+
+```{r}
+no_first <- pat[, -1]
+```
+
+More common as an approach to subsetting is to make a dataframe with just the columns you want or need:
+
+```{r}
+pat <- pat[,c(1,2,3, 13:16)]
+head(pat)
+```
+
+
+***
