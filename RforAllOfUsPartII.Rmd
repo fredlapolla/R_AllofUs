@@ -1,0 +1,413 @@
+---
+title: "R for EHR Data Part II"
+author: "Fred LaPolla"
+date: "2025/12/11"
+output: slidy_presentation
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Review
+
+
+
+* What is the command for reading in a CSV file to R?
+
+* What command lets us find out what type of data we are working with?
+
+* Name some data types in R.
+
+* What is the difference between a matrix and a dataframe?
+
+
+## Pulling the data in
+
+```{r, echo = T}
+pat <- read.csv("https://raw.githubusercontent.com/fredlapolla/R_AllofUs/refs/heads/main/patients.csv")
+med <- read.csv("https://raw.githubusercontent.com/fredlapolla/R_AllofUs/refs/heads/main/medications.csv")
+obs <- read.csv("https://raw.githubusercontent.com/fredlapolla/R_AllofUs/refs/heads/main/observations.csv")
+
+
+```
+
+
+##	Installing and Working with Packages
+
+R has quite a bit of built-in functionality, but there are also many, many free packages that add functions that are not part of the base R functionality. You can download and install these packages, then tell R which packages you want to use, in order to pull in functions that make your work easier. By selecting install under the Packages tab (or using the install.packages() function), you can choose the packages you want to install. 
+
+Using the install button, install the package dplyr now. This package has many functions that make data processing easier. 
+
+Once you have installed a package, you still need to tell RStudio when you want to use it by calling the library() function.
+
+***
+
+## Functions
+
+</br>
+</br>
+
+
+When we work with R, we will call functions to do things to our data, which can include transforming the way the data is set up to make it easier to work with, running analyses on our data or making visualizations. 
+
+Earlier we did a basic function:
+
+```{r,, echo = T}
+mean(1:10)
+```
+
+Or another:
+
+```{r,, echo = T}
+class(med$DESCRIPTION)
+```
+
+
+
+***
+
+## Functions
+
+</br>
+</br>
+</br>
+
+
+Functions will take some data object and do something to it. They can take multiple **arguments.** Arguments are the part of a function that specify what needs to be done, and they can be simple or complex. 
+
+A function like mean can sometimes work with one argument, the vector that you are taking the mean of. To see what other arguments it takes, we can run:
+
+```{r, , echo = T}
+?mean
+```
+
+***
+
+## Functions and Arguments
+
+</br>
+</br>
+</br>
+
+We can see that mean takes three main arguments: x, "an R object" basically the numbers you want the mean of. x is the only manadatory argument. Trim, a fraction that trims from either end of the vector of numbers being averaged. na.rm removes any NAs. This is important because mean cannot run with NAs. 
+
+***
+
+
+## Arguments
+
+</br>
+</br>
+</br>
+
+How can you know when arguments are required or not? 
+
+Honestly this is mostly through trial and error and copying how others code their functions. 
+
+***
+
+## Functions
+
+</br>
+</br>
+</br>
+
+You can write your own functions and name them:
+
+```{r , echo = T}
+doubleMeanFunc <- function(n){mean(n)*2}
+n <- 1:10
+mean(n)
+doubleMeanFunc(n)
+```
+
+The general format is function(x,y){**some command**}. You do not have to have multiple variables. 
+
+
+***
+
+
+## Data Wrangling
+
+
+
+```{r, echo = T}
+#install.packages("tidyverse",  repos =  "http://lib.stat.cmu.edu/R/CRAN/")
+
+library(tidyverse)
+```
+
+
+
+***
+
+#Subsetting Observations
+
+We used indexing to pull out subsets of observations of our data frame, but when you you work with EHR data, you need to filter for specific observations, conditions or medications. The function, filter(), in dplyr that allows you to easily do that using logic operators. The following are logic operators in R:
+
+Function	Operator
+>- EQUALS	==
+>- AND		&	
+>- OR	|
+>- NOT	!
+
+NOTE: A single = is used for assignment, a double == is a logical operator and is checking to see if the statement is true
+
+***
+
+## The Pipe %>% 
+
+This character %>% in dplyr and tidyverse commands means take what is to the left and "pipe" it over to the right
+
+```{r}
+acet <- med %>% filter(DESCRIPTION == "Acetaminophen 500 MG Oral Tablet")
+```
+
+
+
+***
+
+## Filter
+
+The function filter() will need two arguments:
+1) the data frame of interest
+2) the logical condition to apply to the observations
+
+Let's filter for only diabetics
+
+```{r, echo = T}
+alb1  <-  med %>% filter(  med$DESCRIPTION  ==  "albuterol 0.21 MG/ML Inhalation Solution")
+```
+
+***
+
+## Logic and filtering
+
+You can use logical operators (AND = &, OR = |, NOT = !) to create complex conditions.
+
+%>% means take what is to the left and pipe it along to the right. 
+
+%in% means look for a given term in a vector.
+
+This is a great time to use UltraViolet to extract medication/condition/etc names and format for a filter:
+
+  
+```{r, echo = T}
+albuterolAll  <-  med %>% 
+  filter(DESCRIPTION %in% c("albuterol 0.21 MG/ML Inhalation Solution", 
+                            "albuterol 0.83 MG/ML Inhalation Solution", 
+                            "albuterol 5 MG/ML Inhalation Solution", 
+                            "NDA021457 200 ACTUAT albuterol 0.09 MG/ACTUAT Metered Dose Inhaler [ProAir]"))
+```
+
+
+## Subsets
+
+
+Sometimes it is helpful to remove only those observations that have NAs in key variables. For example, removing only those animals from  full_data  for whom there is an NA in the rem variable. This can be done using the function is.na(). In this case, we want to modify the function by sing the exclamation mark (logical NOT symbol), so that we can specify that we want all values that are NOT NA.
+
+```{r, echo = T}
+has_observation <- obs %>% filter(!is.na(obs$VALUE))
+
+```
+
+
+##	Dealing with NAs
+
+This is a very important topic in data processing. Often a dataset will have missing values, typically represented by NAs. When running arithmetic functions, we often need to use the argument na.rm = T
+
+```{r}
+
+gluc <- obs %>% filter(DESCRIPTION == "Glucose [Mass/volume] in Blood")
+gluc$VALUE <- as.numeric(gluc$VALUE)
+mean(gluc$VALUE, na.rm = T)
+
+```
+
+***
+
+## is.na()
+
+You can also use is.na() with indexing to make subsets with no NAs.
+
+is.na() returns a logical vector of if a value is NA (missing) or not:
+
+```{r}
+head(is.na(obs$VALUE))
+```
+
+Running the opposite of is.na(), with a ! will mark all non-missing values as TRUE:
+
+```{r}
+head(!is.na(obs$VALUE))
+```
+
+So we can combine this with indexing to get a subset of non-missing values:
+
+```{r}
+head(obs[!is.na(obs$VALUE),])
+```
+
+
+
+
+## Merging Data Frames
+
+Merging data frames is done using a sytem called "joins." Joins come in 4 main types:
+
+* Inner: Only merges in cases where both data frames contain data for a given row
+* Full: Merges in all cases, if a given row is blank in one data frame, those columns will be empty in the merged data frame. 
+* Left: Merges to all cases where the first data frame listed has rows.
+* Right: Merges to all cases where the second data frame listed has rows. 
+
+In this case it does not really mean much as each of our data-frames matches by patient
+
+***
+
+## Merging
+
+```{r}
+names(pat)[1]<- "PATIENT"
+pat_gluc <- left_join(pat, gluc, by = "PATIENT")
+```
+
+
+
+
+***
+
+#  Visualizations 
+
+
+***
+
+
+ 
+
+## Histograms
+
+One of the most useful charts you may make is a histogram. A histogram is like a bar chart that displays the distribution of our data, basically with each bar presenting how many records fall into a subset of values. We use histograms to assess quickly if our data is normally distributed, or has a skew.
+
+```{r, echo = T}
+hist(pat_gluc$VALUE)
+```
+
+***
+
+## Boxplot
+
+Another chart that displays skew, as well as key values like median and quartiles is a boxplot:
+
+```{r, echo = T}
+boxplot(pat_gluc$VALUE ~ pat_gluc$GENDER, na.rm=T)
+```
+
+***
+
+## GGPlot 
+
+A very common packages for visualization is ggplot2
+
+GGPlot2 works in layers:
+
+1. Layer one determines what data will be charted. Think of this as analogous to just highlighting the columns in Excel.
+2. Layer 2 determines what geom() or shape the chart should take. Examples include scatter or line plots. 
+3. Additional layers provide controls of background, color and axes. 
+
+```{r}
+#install.packages(ggplot2)
+library(ggplot2)
+ggplot(pat_gluc, aes(x = VALUE, y = GENDER))+ geom_point()
+```
+
+
+
+
+***
+
+## P Values
+
+Important to note that a P value is just the odds of finding a result as "far" from the mean of the control group assuming the null hypothesis was true. So .05 means that only 5% of the time we would assume a result as far from the control group's mean assuming there is no difference. 
+
+This is important because in data like RNA Seq Analysis, we may have 1000s of rows, simply see which results are significant at .05 is **Not** going to be meaningful. 
+
+**Remember** a P value < .05, does not mean either that your finding is "true" and it definitely does not mean it is biologically or scientifically significant.
+
+A p value should be only one part of a broader context, including confidence intervals and honest assessment of how likely the findings were in the first place.
+
+There is an on-going push among statisticians to de-emphasize the p value. 
+
+If you have a very small p in r, you get a value like "p-value < 2.2e-16" but for publishing you should write something like "p < .001"
+
+
+
+
+***
+
+## Formatting common statistical tests in R
+
+T Test is used for comparing the means between two normally distributed groups. The null hypothesis says there is no difference between means of the groups. Wilcoxon and Mann-Whitney are used for non-parametric data (non-normal)
+
+Now to actually do the T-Test: t.test compares the means. If we are comparing two objects, such as two columns, the notation is wilcox.test(varA **,** VarB). If we are comparing some column by some variable (like glucose by gender) we would use the tilde: 
+
+```{r, echo = T}
+wilcox.test(pat_gluc$VALUE ~ pat_gluc$GENDER)
+```
+
+Linear Models:
+
+mod <- glm(DEPENDANT ~ INDY_1 + INDY_2 + INDY_3,  )
+summary(mod)
+
+
+
+
+***
+
+## Continuing Your R Journey
+This class has been a very basic introduction to working with data using R, but of course, there is much, much more that R can do. Fortunately, there are many ways to get help figuring out how to do new things in R, or troubleshooting when your R commands don't work the way you think they should.
+
+***
+
+## Google is your friend
+Getting a cryptic error message? Trying to figure out what function does what you are trying to do? Chances are very good that someone else has had your exact question and has gotten it answered! Google! And be as specific as possible!  And look in your search results for the following sites:
+
+1) Stack Overflow: site where people can ask questions and the community will answer. Essential resource! 
+
+(https://stackoverflow.com): 
+
+2)CRAN - The Comprehensive R Archive Network: basically the official site of R. Lots of documentation is hosted there, so you can usually find thorough descriptions of functions and packages
+
+https://cran.r-project.org
+
+3)	R Bloggers: user-created tutorials on a variety of topics 
+
+https://www.r-bloggers.com
+
+4)	Quick-R: a clear guides to common operations in R, run by DataCamp which also has online classes on a freemium model
+
+https://www.statmethods.net/index.html
+
+***
+
+##	Recommended Books
+These resources provide nice overview information to help you learn more about accomplishing general data tasks in R.
+1) Field, Andy, Discovering Statistics Using R
+2) Lander, Jared P. R for Everyone
+3)	Teetor, Paul. The R Cookbook: Proven Recipes for Data Analysis, Statistics, and Graphics
+4)	Grolemund, Garrett & Wickham, Hadley. R for Data Science
+
+***
+
+##	Do Something (Anything!) in R
+Find something that you have done or were going to do in a spreadsheet, or another programming language or just make something up to do, and do it in R instead. 
+
+1)	Read in a file  -- read.csv(file = FILENAME.csv)
+2)	Use select or filter to grab a subset of the data
+3)	Use mean, max, etc. for descriptive statistics do not forget to use na.rm!
+4)	Save your code in an R file
+5)	Save your data, write.csv(DATAFRAME, file = "FILENAME.csv")
+
+If you do not remember how to do something, or want to do something that was not covered in class:  Google it!! The only way to learn R is to use it!
+

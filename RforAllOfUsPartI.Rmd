@@ -1,10 +1,9 @@
 ---
-title: "Intro to R Crash Course"
+title: "R for EHR Data Part II"
 author: "Fred LaPolla"
-date: "11/11/2025"
-output:
-  slidy_presentation: default
-  ioslides_presentation: default
+date: "2025/12/4"
+output: slidy_presentation
+  
 ---
 
 ```{r setup, include=FALSE}
@@ -338,10 +337,9 @@ Leaving it blank either before or after the comma will return all observations o
 
 ## Concatenating
 
-Using the concatenation function c(), allows you to select observations or variables that are not consecutive, for example this will select the 1st, 5th, and 80th observations of the name and order :
 
 ```{r}
-nyc[c(1,5,80), c(1,5)]
+pat[c(1,5,80), c(1,5)]
 ```
 
 ***
