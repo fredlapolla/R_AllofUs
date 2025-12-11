@@ -142,7 +142,7 @@ library(tidyverse)
 
 ***
 
-#Subsetting Observations
+## Subsetting Observations
 
 We used indexing to pull out subsets of observations of our data frame, but when you you work with EHR data, you need to filter for specific observations, conditions or medications. The function, filter(), in dplyr that allows you to easily do that using logic operators. The following are logic operators in R:
 
