@@ -1,7 +1,7 @@
 ---
 title: "R for EHR Data Part II"
 author: "Fred LaPolla"
-date: "2025/12/11"
+date: "2026/3/12"
 output: slidy_presentation
 ---
 
@@ -267,147 +267,10 @@ In this case it does not really mean much as each of our data-frames matches by 
 
 ## Merging
 
-```{r}
+```{r, echo = T}
 names(pat)[1]<- "PATIENT"
 pat_gluc <- left_join(pat, gluc, by = "PATIENT")
 ```
 
 
-
-
-***
-
-#  Visualizations 
-
-
-***
-
-
- 
-
-## Histograms
-
-One of the most useful charts you may make is a histogram. A histogram is like a bar chart that displays the distribution of our data, basically with each bar presenting how many records fall into a subset of values. We use histograms to assess quickly if our data is normally distributed, or has a skew.
-
-```{r, echo = T}
-hist(pat_gluc$VALUE)
-```
-
-***
-
-## Boxplot
-
-Another chart that displays skew, as well as key values like median and quartiles is a boxplot:
-
-```{r, echo = T}
-boxplot(pat_gluc$VALUE ~ pat_gluc$GENDER, na.rm=T)
-```
-
-***
-
-## GGPlot 
-
-A very common packages for visualization is ggplot2
-
-GGPlot2 works in layers:
-
-1. Layer one determines what data will be charted. Think of this as analogous to just highlighting the columns in Excel.
-2. Layer 2 determines what geom() or shape the chart should take. Examples include scatter or line plots. 
-3. Additional layers provide controls of background, color and axes. 
-
-```{r}
-#install.packages(ggplot2)
-library(ggplot2)
-ggplot(pat_gluc, aes(x = VALUE, y = GENDER))+ geom_point()
-```
-
-
-
-
-***
-
-## P Values
-
-Important to note that a P value is just the odds of finding a result as "far" from the mean of the control group assuming the null hypothesis was true. So .05 means that only 5% of the time we would assume a result as far from the control group's mean assuming there is no difference. 
-
-This is important because in data like RNA Seq Analysis, we may have 1000s of rows, simply see which results are significant at .05 is **Not** going to be meaningful. 
-
-**Remember** a P value < .05, does not mean either that your finding is "true" and it definitely does not mean it is biologically or scientifically significant.
-
-A p value should be only one part of a broader context, including confidence intervals and honest assessment of how likely the findings were in the first place.
-
-There is an on-going push among statisticians to de-emphasize the p value. 
-
-If you have a very small p in r, you get a value like "p-value < 2.2e-16" but for publishing you should write something like "p < .001"
-
-
-
-
-***
-
-## Formatting common statistical tests in R
-
-T Test is used for comparing the means between two normally distributed groups. The null hypothesis says there is no difference between means of the groups. Wilcoxon and Mann-Whitney are used for non-parametric data (non-normal)
-
-Now to actually do the T-Test: t.test compares the means. If we are comparing two objects, such as two columns, the notation is wilcox.test(varA **,** VarB). If we are comparing some column by some variable (like glucose by gender) we would use the tilde: 
-
-```{r, echo = T}
-wilcox.test(pat_gluc$VALUE ~ pat_gluc$GENDER)
-```
-
-Linear Models:
-
-mod <- glm(DEPENDANT ~ INDY_1 + INDY_2 + INDY_3,  )
-summary(mod)
-
-
-
-
-***
-
-## Continuing Your R Journey
-This class has been a very basic introduction to working with data using R, but of course, there is much, much more that R can do. Fortunately, there are many ways to get help figuring out how to do new things in R, or troubleshooting when your R commands don't work the way you think they should.
-
-***
-
-## Google is your friend
-Getting a cryptic error message? Trying to figure out what function does what you are trying to do? Chances are very good that someone else has had your exact question and has gotten it answered! Google! And be as specific as possible!  And look in your search results for the following sites:
-
-1) Stack Overflow: site where people can ask questions and the community will answer. Essential resource! 
-
-(https://stackoverflow.com): 
-
-2)CRAN - The Comprehensive R Archive Network: basically the official site of R. Lots of documentation is hosted there, so you can usually find thorough descriptions of functions and packages
-
-https://cran.r-project.org
-
-3)	R Bloggers: user-created tutorials on a variety of topics 
-
-https://www.r-bloggers.com
-
-4)	Quick-R: a clear guides to common operations in R, run by DataCamp which also has online classes on a freemium model
-
-https://www.statmethods.net/index.html
-
-***
-
-##	Recommended Books
-These resources provide nice overview information to help you learn more about accomplishing general data tasks in R.
-1) Field, Andy, Discovering Statistics Using R
-2) Lander, Jared P. R for Everyone
-3)	Teetor, Paul. The R Cookbook: Proven Recipes for Data Analysis, Statistics, and Graphics
-4)	Grolemund, Garrett & Wickham, Hadley. R for Data Science
-
-***
-
-##	Do Something (Anything!) in R
-Find something that you have done or were going to do in a spreadsheet, or another programming language or just make something up to do, and do it in R instead. 
-
-1)	Read in a file  -- read.csv(file = FILENAME.csv)
-2)	Use select or filter to grab a subset of the data
-3)	Use mean, max, etc. for descriptive statistics do not forget to use na.rm!
-4)	Save your code in an R file
-5)	Save your data, write.csv(DATAFRAME, file = "FILENAME.csv")
-
-If you do not remember how to do something, or want to do something that was not covered in class:  Google it!! The only way to learn R is to use it!
 
