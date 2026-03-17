@@ -1,0 +1,307 @@
+---
+title: "R for All of Us Part III"
+output: slidy_presentation
+date: "2026-03-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r, echo = T}
+library(tidyverse)
+pat <- read.csv("https://raw.githubusercontent.com/fredlapolla/R_AllofUs/refs/heads/main/patients.csv")
+med <- read.csv("https://raw.githubusercontent.com/fredlapolla/R_AllofUs/refs/heads/main/medications.csv")
+obs <- read.csv("https://raw.githubusercontent.com/fredlapolla/R_AllofUs/refs/heads/main/observations.csv")
+gluc <- obs %>% filter(DESCRIPTION == "Glucose [Mass/volume] in Blood")
+gluc <- gluc[,c(1,2,7)]
+names(gluc)<- c("glucDate","PATIENT","GlucoseLevel")
+pat <- pat[,c(1:2,13:17,26:28)]
+names(pat)[1]<- "PATIENT"
+demodf <- left_join(pat, gluc, by = "PATIENT")
+
+tobacco <- obs %>% filter(DESCRIPTION == "Tobacco smoking status")
+tobacco <- tobacco[,c(1,2,7)]
+names(tobacco) <- c("tobDate","PATIENT","TobSmokStat")
+demodf <- left_join(demodf,tobacco, by = "PATIENT")
+chol <- obs %>% filter(DESCRIPTION == "Cholesterol [Mass/volume] in Serum or Plasma")
+chol <- chol[,c(1,2,7)]
+names(chol) <- c("cholDate","PATIENT","CholesterolLevel")
+demodf <- left_join(demodf,chol, by = "PATIENT")
+
+
+
+
+```
+```{r}
+summary(demodf)
+```
+
+***
+
+## Cleaning
+
+```{r, echo = T}
+demodf$BIRTHDATE <- as.Date(demodf$BIRTHDATE)
+demodf$glucDate <- as.Date(demodf$glucDate)
+demodf$BIRTHDATE <- as.Date(demodf$BIRTHDATE)
+demodf$tobDate <- as.Date(demodf$tobDate)
+demodf$cholDate <- as.Date(demodf$cholDate)
+demodf$GlucoseLevel <- as.numeric(demodf$GlucoseLevel)
+demodf$CholesterolLevel <- as.numeric(demodf$CholesterolLevel)
+demodf$TobSmokStat <- factor(demodf$TobSmokStat)
+demodf$AGE <- floor(difftime(today(),demodf$BIRTHDATE, units = "weeks")/52)
+demodf$AGE <- as.numeric(demodf$AGE)
+summary(demodf)
+
+
+
+
+
+
+```
+
+
+
+
+
+#  Visualizations 
+
+
+***
+
+
+ 
+
+## Histograms
+
+One of the most useful charts you may make is a histogram. A histogram is like a bar chart that displays the distribution of our data, basically with each bar presenting how many records fall into a subset of values. We use histograms to assess quickly if our data is normally distributed, or has a skew.
+
+```{r, echo = T}
+hist(demodf$GlucoseLevel)
+hist(demodf$CholesterolLevel)
+hist(demodf$AGE)
+```
+
+***
+
+## Boxplot
+
+Another chart that displays skew, as well as key values like median and quartiles is a boxplot:
+
+```{r, echo = T}
+boxplot(demodf$GlucoseLevel ~ demodf$GENDER, na.rm=T)
+```
+
+***
+
+## GGPlot 
+
+A very common packages for visualization is ggplot2
+
+GGPlot2 works in layers:
+
+1. Layer one determines what data will be charted. Think of this as analogous to just highlighting the columns in Excel.
+2. Layer 2 determines what geom() or shape the chart should take. Examples include scatter or line plots. 
+3. Additional layers provide controls of background, color and axes. 
+
+```{r, echo = T}
+#install.packages(ggplot2)
+library(ggplot2)
+ggplot(demodf, aes(x = GlucoseLevel, y = CholesterolLevel))+ geom_point()
+```
+
+## GGPlot2 Step1
+
+first we name the dataset and assign our basic X Y coordinates. Not all charts will have both. Let's start with a basic scatterplot 
+
+```{r, echo = TRUE}
+pic <- ggplot(demodf, aes(x = AGE, y = CholesterolLevel))
+pic
+```
+
+When we run this, nothing happens, or seems to happen. 
+
+****
+
+## GGPlot2 Step 2
+
+</br>
+</br>
+</br>
+
+We next need to add a layer that tells R what sort of shape to map those aesthetic attributes onto:
+
+```{r, echo = TRUE}
+pic + geom_point()
+```
+
+***
+
+## A different Geom
+
+We could try a different "geom" but most do not actually make a lot of sense for this combination of variables:
+
+```{r, echo = TRUE}
+pic + geom_smooth()
+```
+
+***
+
+## Combining geoms
+
+We can also combine as layers and add a linear estimate with:
+
+```{r}
+pic + geom_point()+ geom_smooth(method = "lm")
+```
+
+
+There is **no need** to memorize these "geoms." Instead go to the Help up on the top menu and open the Cheatsheets. There are many cheatsheets, and they add when you install packages. This is a quick reference guide. 
+
+***
+
+## Customizing your chart
+
+GGplot excels for allowing customization
+
+```{r, echo = T}
+ggplot(demodf, aes(x = AGE, y = CholesterolLevel)) + geom_point()+ geom_smooth(method = "lm") + scale_x_continuous(limits = c(30,90),breaks = seq(30,90, 5))
+```
+
+***
+
+## Customizing your chart
+
+```{r, echo = T}
+ggplot(demodf, aes(x = AGE, y = CholesterolLevel)) + geom_point(color = "steelblue")+ geom_smooth(method = "lm", color = "black") + scale_x_continuous(limits = c(30,90),breaks = seq(30,90, 5))
+```
+
+***
+
+## Customizing your chart
+
+```{r, echo = T}
+ggplot(demodf, aes(x = AGE, y = CholesterolLevel)) + geom_point(color = "steelblue")+ geom_smooth(method = "lm", color = "black") + scale_x_continuous(limits = c(30,90),breaks = seq(30,90, 5))+xlab("Participant Age")+ylab("Cholesterol level (mg/dl)")
+```
+
+***
+
+## Customizing your chart
+
+```{r, echo = T}
+ggplot(demodf, aes(x = AGE, y = CholesterolLevel)) + geom_point(color = "steelblue")+ geom_smooth(method = "lm", color = "black") + scale_x_continuous(limits = c(30,90),breaks = seq(30,90, 5))+xlab("Participant Age")+ylab("Cholesterol level (mg/dl)")+theme_minimal()
+```
+
+***
+
+## Saving your chart
+
+```{r, echo = T}
+demoChart <- ggplot(demodf, aes(x = AGE, y = CholesterolLevel)) + geom_point(color = "steelblue")+ geom_smooth(method = "lm", color = "black") + scale_x_continuous(limits = c(30,90),breaks = seq(30,90, 5))+xlab("Participant Age")+ylab("Cholesterol level (mg/dl)")+theme_minimal()
+
+ggsave("C:\\users\\lapolf01\\downloads\\demoChart.png", demoChart)
+```
+
+***
+
+## P Values
+
+Important to note that a P value is just the odds of finding a result as "far" from the mean of the control group assuming the null hypothesis was true. So .05 means that only 5% of the time we would assume a result as far from the control group's mean assuming there is no difference. 
+
+This is important because in data like RNA Seq Analysis, we may have 1000s of rows, simply see which results are significant at .05 is **Not** going to be meaningful. 
+
+**Remember** a P value < .05, does not mean either that your finding is "true" and it definitely does not mean it is biologically or scientifically significant.
+
+A p value should be only one part of a broader context, including confidence intervals and honest assessment of how likely the findings were in the first place.
+
+There is an on-going push among statisticians to de-emphasize the p value. 
+
+If you have a very small p in r, you get a value like "p-value < 2.2e-16" but for publishing you should write something like "p < .001"
+
+
+
+
+***
+
+## Formatting common statistical tests in R
+
+T Test is used for comparing the means between two normally distributed groups. The null hypothesis says there is no difference between means of the groups. Wilcoxon and Mann-Whitney are used for non-parametric data (non-normal)
+
+Now to actually do the T-Test: t.test compares the means. If we are comparing two objects, such as two columns, the notation is wilcox.test(varA **,** VarB). If we are comparing some column by some variable (like glucose by gender) we would use the tilde: 
+
+```{r, echo = T}
+wilcox.test(demodf$GlucoseLevel ~ demodf$GENDER)
+```
+
+***
+
+## Modeling
+
+Linear Models:
+
+mod <- glm(DEPENDENT ~ INDY_1 + INDY_2 + INDY_3,  )
+summary(mod)
+
+```{r, echo = T}
+mod <- glm(CholesterolLevel ~ TobSmokStat + AGE + GENDER, data = demodf, family = "gaussian")
+summary(mod)
+```
+
+
+```{r, echo = T}
+mod2 <- glm( TobSmokStat ~ CholesterolLevel  + AGE + GENDER, data = demodf, family = "binomial")
+summary(mod2)
+```
+
+
+
+
+***
+
+## Continuing Your R Journey
+This class has been a very basic introduction to working with data using R, but of course, there is much, much more that R can do. Fortunately, there are many ways to get help figuring out how to do new things in R, or troubleshooting when your R commands don't work the way you think they should.
+
+***
+
+## Google is your friend
+Getting a cryptic error message? Trying to figure out what function does what you are trying to do? Chances are very good that someone else has had your exact question and has gotten it answered! Google! And be as specific as possible!  And look in your search results for the following sites:
+
+1) Stack Overflow: site where people can ask questions and the community will answer. Essential resource! 
+
+(https://stackoverflow.com): 
+
+2)CRAN - The Comprehensive R Archive Network: basically the official site of R. Lots of documentation is hosted there, so you can usually find thorough descriptions of functions and packages
+
+https://cran.r-project.org
+
+3)	R Bloggers: user-created tutorials on a variety of topics 
+
+https://www.r-bloggers.com
+
+4)	Quick-R: a clear guides to common operations in R, run by DataCamp which also has online classes on a freemium model
+
+https://www.statmethods.net/index.html
+
+***
+
+##	Recommended Books
+These resources provide nice overview information to help you learn more about accomplishing general data tasks in R.
+1) Field, Andy, Discovering Statistics Using R
+2) Lander, Jared P. R for Everyone
+3)	Teetor, Paul. The R Cookbook: Proven Recipes for Data Analysis, Statistics, and Graphics
+4)	Grolemund, Garrett & Wickham, Hadley. R for Data Science
+
+***
+
+##	Do Something (Anything!) in R
+Find something that you have done or were going to do in a spreadsheet, or another programming language or just make something up to do, and do it in R instead. 
+
+1)	Read in a file  -- read.csv(file = FILENAME.csv)
+2)	Use select or filter to grab a subset of the data
+3)	Use mean, max, etc. for descriptive statistics do not forget to use na.rm!
+4)	Save your code in an R file
+5)	Save your data, write.csv(DATAFRAME, file = "FILENAME.csv")
+
+If you do not remember how to do something, or want to do something that was not covered in class:  Google it!! The only way to learn R is to use it!
